@@ -4,7 +4,7 @@ A production-grade data engineering pipeline for analyzing the SaaS market lands
 
 ---
 
-## 📐 Architecture
+## Architecture
 
 ```
 data/raw/                  ← Source CSV (ingestion)
