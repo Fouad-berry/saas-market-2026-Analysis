@@ -144,6 +144,8 @@ GitHub Actions runs on every push to `main`:
 
 ---
 
+Réalisé par [FOUAD MOUTAIROU]
+
 ## 📄 License
 
 MIT
