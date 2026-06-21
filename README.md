@@ -145,12 +145,8 @@ GitHub Actions runs on every push to `main`:
 ---
 
 Réalisé par [FOUAD MOUTAIROU]
-<<<<<<< HEAD
--Linkedln: https://www.linkedin.com/in/fouad-moutairou-044460273/
--Portfolio
-=======
 - Linkedln: https://www.linkedin.com/in/fouad-moutairou-044460273/
->>>>>>> 112b14ec899b67d5c7f50e9393db809b5cbf36f3
+-Portfolio
 
 ## 📄 License
 
