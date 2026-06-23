@@ -146,7 +146,7 @@ GitHub Actions runs on every push to `main`:
 
 Réalisé par [FOUAD MOUTAIROU]
 - My Linkedln: https://www.linkedin.com/in/fouad-moutairou-044460273/
-- My Portfolio: https://portfolio-fouad.netlify.app
+- My Portfolio link: https://portfolio-fouad.netlify.app
 
 ## 📄 License
 
