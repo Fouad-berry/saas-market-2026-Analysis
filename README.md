@@ -19,18 +19,21 @@ data/marts/                ← Analytical data marts (Parquet)
     └── mart_features.parquet
 
 src/
+    ├── pipeline.py        ← Orchestrator
     ├── ingestion/         ← Data loading & validation (Great Expectations)
     ├── transform/         ← Cleaning, type casting, feature engineering
     ├── analysis/          ← Aggregation & mart generation
     └── utils/             ← Logger, config, helpers
+
+docs/
+    └── architecture.md    ← Architecture documentation
 
 notebooks/
     └── exploration.ipynb  ← EDA with Plotly visualizations
 
 tests/                     ← Pytest unit + integration tests
 
-.github/workflows/
-    └── pipeline.yml       ← CI/CD with GitHub Actions
+pyproject.toml             ← Project metadata & tool config
 ```
 
 ---
@@ -56,8 +59,8 @@ tests/                     ← Pytest unit + integration tests
 
 ```bash
 # 1. Clone & install
-git clone https://github.com/YOUR_USERNAME/saas-market-pipeline.git
-cd saas-market-pipeline
+git clone https://github.com/YOUR_USERNAME/saas-market-2026-Analysis.git
+cd saas-market-2026-Analysis
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
@@ -79,8 +82,7 @@ jupyter lab notebooks/exploration.ipynb
 [1] INGEST      → Load raw CSV, validate schema & data quality
 [2] TRANSFORM   → Clean nulls, cast types, engineer features
 [3] LOAD        → Write clean Parquet to data/processed/
-[4] MART        → Aggregate into 3 analytical marts
-[5] REPORT      → Print summary statistics to stdout
+[4] MART        → Aggregate into 3 analytical marts & print summary
 ```
 
 ---
@@ -109,9 +111,9 @@ Covers:
 
 ---
 
-## ⚙️ CI/CD
+## ⚙️ CI/CD (planned)
 
-GitHub Actions runs on every push to `main`:
+GitHub Actions workflow (to be created) will run on every push to `main`:
 1. Install dependencies
 2. Run full pipeline
 3. Run all tests
@@ -137,9 +139,11 @@ GitHub Actions runs on every push to `main`:
 | Data manipulation | Pandas, NumPy |
 | Storage format | Apache Parquet (via PyArrow) |
 | Data quality | Great Expectations |
-| Visualization | Plotly, Matplotlib |
-| Testing | Pytest |
-| CI/CD | GitHub Actions |
+| Visualization | Plotly, Matplotlib, Seaborn |
+| Logging | Loguru |
+| Configuration | Pydantic, python-dotenv |
+| Testing | Pytest (with pytest-cov) |
+| CI/CD | GitHub Actions (planned) |
 | Notebooks | Jupyter Lab |
 
 ---
