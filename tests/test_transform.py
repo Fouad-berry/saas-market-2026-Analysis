@@ -4,30 +4,31 @@ Tests for the transform / cleaning layer.
 
 import numpy as np
 import pandas as pd
-import pytest
 
 from src.transform.cleaner import (
-    handle_nulls,
     cast_types,
-    engineer_features,
     deduplicate,
+    engineer_features,
+    handle_nulls,
     transform,
 )
 
 
 def base_df():
-    return pd.DataFrame({
-        "tool_name": ["Notion", "ClickUp", "Asana"],
-        "category": ["pm", "pm", "pm"],
-        "vertical": ["Business", "Business", "Business"],
-        "free_plan": [True, True, False],
-        "starting_price_usd": [0.0, 5.0, 10.0],
-        "highest_plan_price_usd": [18.0, np.nan, 25.0],
-        "plan_count": [4, 3, 4],
-        "rating": [4.7, np.nan, 4.4],
-        "features_count": [32, 20, 31],
-        "website": ["a.com", "b.com", "c.com"],
-    })
+    return pd.DataFrame(
+        {
+            "tool_name": ["Notion", "ClickUp", "Asana"],
+            "category": ["pm", "pm", "pm"],
+            "vertical": ["Business", "Business", "Business"],
+            "free_plan": [True, True, False],
+            "starting_price_usd": [0.0, 5.0, 10.0],
+            "highest_plan_price_usd": [18.0, np.nan, 25.0],
+            "plan_count": [4, 3, 4],
+            "rating": [4.7, np.nan, 4.4],
+            "features_count": [32, 20, 31],
+            "website": ["a.com", "b.com", "c.com"],
+        }
+    )
 
 
 class TestHandleNulls:
@@ -111,8 +112,14 @@ class TestEngineerFeatures:
 
     def test_new_columns_created(self):
         result = engineer_features(self._prepped())
-        for col in ["price_range_usd", "price_per_feature_usd", "is_freemium",
-                    "rating_tier", "features_tier", "log_highest_price"]:
+        for col in [
+            "price_range_usd",
+            "price_per_feature_usd",
+            "is_freemium",
+            "rating_tier",
+            "features_tier",
+            "log_highest_price",
+        ]:
             assert col in result.columns, f"Missing column: {col}"
 
 

@@ -7,11 +7,11 @@ Entry point: `transform(df) -> pd.DataFrame`
 import numpy as np
 import pandas as pd
 
-from src.utils.config import CATEGORICAL_COLUMNS, NUMERIC_COLUMNS
+from src.utils.config import CATEGORICAL_COLUMNS
 from src.utils.logger import logger
 
-
 # ── 1. Null handling ──────────────────────────────────────────────────────────
+
 
 def handle_nulls(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -50,6 +50,7 @@ def handle_nulls(df: pd.DataFrame) -> pd.DataFrame:
 
 # ── 2. Type casting ───────────────────────────────────────────────────────────
 
+
 def cast_types(df: pd.DataFrame) -> pd.DataFrame:
     """Enforce correct dtypes and convert categoricals."""
     df = df.copy()
@@ -57,18 +58,19 @@ def cast_types(df: pd.DataFrame) -> pd.DataFrame:
     for col in CATEGORICAL_COLUMNS:
         df[col] = df[col].astype("category")
 
-    df["free_plan"]       = df["free_plan"].astype(bool)
-    df["plan_count"]      = df["plan_count"].astype(int)
-    df["features_count"]  = df["features_count"].astype(int)
-    df["starting_price_usd"]      = df["starting_price_usd"].astype(float)
-    df["highest_plan_price_usd"]  = df["highest_plan_price_usd"].astype(float)
-    df["rating"]          = df["rating"].astype(float)
+    df["free_plan"] = df["free_plan"].astype(bool)
+    df["plan_count"] = df["plan_count"].astype(int)
+    df["features_count"] = df["features_count"].astype(int)
+    df["starting_price_usd"] = df["starting_price_usd"].astype(float)
+    df["highest_plan_price_usd"] = df["highest_plan_price_usd"].astype(float)
+    df["rating"] = df["rating"].astype(float)
 
     logger.info("Type casting complete ✓")
     return df
 
 
 # ── 3. Feature engineering ────────────────────────────────────────────────────
+
 
 def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -82,9 +84,9 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
     """
     df = df.copy()
 
-    df["price_range_usd"] = (
-        df["highest_plan_price_usd"] - df["starting_price_usd"]
-    ).clip(lower=0.0)
+    df["price_range_usd"] = (df["highest_plan_price_usd"] - df["starting_price_usd"]).clip(
+        lower=0.0
+    )
 
     df["price_per_feature_usd"] = np.where(
         df["features_count"] > 0,
@@ -112,11 +114,12 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
 
     df["log_highest_price"] = np.log1p(df["highest_plan_price_usd"])
 
-    logger.info(f"Engineered 6 new features ✓")
+    logger.info("Engineered 6 new features ✓")
     return df
 
 
 # ── 4. Deduplication ──────────────────────────────────────────────────────────
+
 
 def deduplicate(df: pd.DataFrame) -> pd.DataFrame:
     """Drop exact duplicate rows, keep first occurrence."""
@@ -131,6 +134,7 @@ def deduplicate(df: pd.DataFrame) -> pd.DataFrame:
 
 
 # ── Public entry point ────────────────────────────────────────────────────────
+
 
 def transform(df: pd.DataFrame) -> pd.DataFrame:
     """Full transformation pipeline."""

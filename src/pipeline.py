@@ -12,17 +12,17 @@ from pathlib import Path
 # Allow running from project root: python src/pipeline.py
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from src.analysis.marts import build_marts
 from src.ingestion.loader import load_and_validate
 from src.transform.cleaner import transform
-from src.analysis.marts import build_marts
 from src.utils.config import (
-    RAW_CSV,
     CLEAN_PARQUET,
     MART_CATEGORY,
-    MART_PRICING,
     MART_FEATURES,
-    PROCESSED_DIR,
+    MART_PRICING,
     MARTS_DIR,
+    PROCESSED_DIR,
+    RAW_CSV,
 )
 from src.utils.io import write_parquet
 from src.utils.logger import logger
@@ -39,7 +39,7 @@ def print_summary(df_clean, marts: dict) -> None:
     print(f"  Total tools analysed : {len(df_clean):,}")
     print(f"  Categories           : {df_clean['category'].nunique()}")
     print(f"  Verticals            : {', '.join(df_clean['vertical'].unique())}")
-    print(f"  Free plan available  : {df_clean['free_plan'].mean()*100:.1f}% of tools")
+    print(f"  Free plan available  : {df_clean['free_plan'].mean() * 100:.1f}% of tools")
     print(f"  Average rating       : {df_clean['rating'].mean():.3f} / 5.0")
     print(f"  Avg features/tool    : {df_clean['features_count'].mean():.1f}")
     print()
@@ -47,8 +47,7 @@ def print_summary(df_clean, marts: dict) -> None:
     print("  TOP 5 CATEGORIES BY TOOL COUNT")
     print("  " + "-" * 40)
     for _, row in mc.head(5).iterrows():
-        print(f"  {row['category']:<25} {row['tool_count']:>3} tools  "
-              f"avg ⭐ {row['avg_rating']}")
+        print(f"  {row['category']:<25} {row['tool_count']:>3} tools  avg ⭐ {row['avg_rating']}")
     print()
 
     print("  PRICING TIER BREAKDOWN")
@@ -57,7 +56,7 @@ def print_summary(df_clean, marts: dict) -> None:
     total = tier_totals.sum()
     for tier, count in tier_totals.items():
         bar = "█" * int(count / total * 30)
-        print(f"  {tier:<12} {bar:<30} {count:>3} ({count/total*100:.0f}%)")
+        print(f"  {tier:<12} {bar:<30} {count:>3} ({count / total * 100:.0f}%)")
     print("═" * 60 + "\n")
 
 
@@ -85,7 +84,7 @@ def run_pipeline() -> None:
     logger.info("[4/4] Building marts")
     marts = build_marts(df_clean)
     write_parquet(marts["mart_category"], MART_CATEGORY)
-    write_parquet(marts["mart_pricing"],  MART_PRICING)
+    write_parquet(marts["mart_pricing"], MART_PRICING)
     write_parquet(marts["mart_features"], MART_FEATURES)
 
     elapsed = time.perf_counter() - start

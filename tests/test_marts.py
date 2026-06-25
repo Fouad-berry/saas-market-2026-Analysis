@@ -3,35 +3,36 @@ Tests for the analysis / mart building layer.
 """
 
 import pandas as pd
-import pytest
 
 from src.analysis.marts import (
     build_mart_category,
-    build_mart_pricing,
     build_mart_features,
+    build_mart_pricing,
     build_marts,
 )
 
 
 def sample_df():
-    return pd.DataFrame({
-        "tool_name": ["Notion", "ClickUp", "Stripe", "Brex", "GPT-4"],
-        "category": ["pm", "pm", "fintech", "fintech", "llm"],
-        "vertical": ["Business", "Business", "Business", "Business", "AI"],
-        "free_plan": [True, True, False, False, False],
-        "starting_price_usd": [0.0, 5.0, 0.0, 50.0, 20.0],
-        "highest_plan_price_usd": [18.0, 12.0, 99.0, 200.0, 120.0],
-        "plan_count": [4, 4, 3, 2, 2],
-        "rating": [4.7, 4.7, 4.5, 4.2, 4.8],
-        "features_count": [32, 47, 15, 12, 20],
-        "website": ["a.com"] * 5,
-        "is_freemium": [False, True, False, False, False],
-        "price_range_usd": [18.0, 7.0, 99.0, 150.0, 100.0],
-        "price_per_feature_usd": [0.0, 0.11, 0.0, 4.17, 1.0],
-        "log_highest_price": [2.94, 2.56, 4.60, 5.30, 4.80],
-        "rating_tier": ["High", "High", "Mid", "Low", "High"],
-        "features_tier": ["High", "High", "Low", "Low", "Mid"],
-    })
+    return pd.DataFrame(
+        {
+            "tool_name": ["Notion", "ClickUp", "Stripe", "Brex", "GPT-4"],
+            "category": ["pm", "pm", "fintech", "fintech", "llm"],
+            "vertical": ["Business", "Business", "Business", "Business", "AI"],
+            "free_plan": [True, True, False, False, False],
+            "starting_price_usd": [0.0, 5.0, 0.0, 50.0, 20.0],
+            "highest_plan_price_usd": [18.0, 12.0, 99.0, 200.0, 120.0],
+            "plan_count": [4, 4, 3, 2, 2],
+            "rating": [4.7, 4.7, 4.5, 4.2, 4.8],
+            "features_count": [32, 47, 15, 12, 20],
+            "website": ["a.com"] * 5,
+            "is_freemium": [False, True, False, False, False],
+            "price_range_usd": [18.0, 7.0, 99.0, 150.0, 100.0],
+            "price_per_feature_usd": [0.0, 0.11, 0.0, 4.17, 1.0],
+            "log_highest_price": [2.94, 2.56, 4.60, 5.30, 4.80],
+            "rating_tier": ["High", "High", "Mid", "Low", "High"],
+            "features_tier": ["High", "High", "Low", "Low", "Mid"],
+        }
+    )
 
 
 class TestMartCategory:
@@ -54,8 +55,13 @@ class TestMartCategory:
 
     def test_expected_columns_present(self):
         result = build_mart_category(sample_df())
-        for col in ["tool_count", "free_plan_pct", "avg_rating",
-                    "median_starting_price", "dominant_vertical"]:
+        for col in [
+            "tool_count",
+            "free_plan_pct",
+            "avg_rating",
+            "median_starting_price",
+            "dominant_vertical",
+        ]:
             assert col in result.columns
 
 

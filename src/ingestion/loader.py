@@ -6,14 +6,14 @@ Entry point: `load_and_validate(path) -> pd.DataFrame`
 
 from pathlib import Path
 
-import pandas as pd
 import great_expectations as gx
+import pandas as pd
 
-from src.utils.config import EXPECTED_COLUMNS, RATING_MIN, RATING_MAX, PRICE_MAX
+from src.utils.config import EXPECTED_COLUMNS, PRICE_MAX, RATING_MAX, RATING_MIN
 from src.utils.logger import logger
 
-
 # ── Loader ────────────────────────────────────────────────────────────────────
+
 
 def load_raw(path: Path) -> pd.DataFrame:
     """Read the raw CSV into a DataFrame with basic type hints."""
@@ -28,11 +28,12 @@ def load_raw(path: Path) -> pd.DataFrame:
             "website": str,
         },
     )
-    logger.info(f"Loaded {len(df):,} rows × {len(df.columns)} columns")
+    logger.info(f"Loaded {len(df):,} rows x {len(df.columns)} columns")
     return df
 
 
 # ── Schema check ─────────────────────────────────────────────────────────────
+
 
 def validate_schema(df: pd.DataFrame) -> None:
     """Raise ValueError if expected columns are missing."""
@@ -43,6 +44,7 @@ def validate_schema(df: pd.DataFrame) -> None:
 
 
 # ── Great Expectations suite ──────────────────────────────────────────────────
+
 
 def run_ge_suite(df: pd.DataFrame) -> dict:
     """
@@ -65,9 +67,7 @@ def run_ge_suite(df: pd.DataFrame) -> dict:
     expectations = []
 
     for col in EXPECTED_COLUMNS:
-        expectations.append(
-            gx.expectations.ExpectColumnToExist(column=col)
-        )
+        expectations.append(gx.expectations.ExpectColumnToExist(column=col))
 
     expectations += [
         gx.expectations.ExpectColumnValuesToBeUnique(column="tool_name"),
@@ -83,9 +83,7 @@ def run_ge_suite(df: pd.DataFrame) -> dict:
         gx.expectations.ExpectColumnValuesToBeInSet(
             column="vertical", value_set=["Business", "AI", "Crypto"]
         ),
-        gx.expectations.ExpectColumnValuesToBeInSet(
-            column="free_plan", value_set=[True, False]
-        ),
+        gx.expectations.ExpectColumnValuesToBeInSet(column="free_plan", value_set=[True, False]),
         gx.expectations.ExpectColumnValuesToBeBetween(
             column="plan_count", min_value=1, mostly=0.99
         ),
@@ -123,6 +121,7 @@ def run_ge_suite(df: pd.DataFrame) -> dict:
 
 
 # ── Public entry point ────────────────────────────────────────────────────────
+
 
 def load_and_validate(path: Path) -> pd.DataFrame:
     """Load raw CSV, run schema + GE validation, return DataFrame."""

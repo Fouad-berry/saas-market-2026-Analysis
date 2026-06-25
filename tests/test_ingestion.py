@@ -7,11 +7,17 @@ import pytest
 
 from src.ingestion.loader import validate_schema
 
-
 VALID_COLS = [
-    "tool_name", "category", "vertical", "free_plan",
-    "starting_price_usd", "highest_plan_price_usd",
-    "plan_count", "rating", "features_count", "website",
+    "tool_name",
+    "category",
+    "vertical",
+    "free_plan",
+    "starting_price_usd",
+    "highest_plan_price_usd",
+    "plan_count",
+    "rating",
+    "features_count",
+    "website",
 ]
 
 

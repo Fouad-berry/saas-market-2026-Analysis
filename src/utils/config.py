@@ -9,18 +9,18 @@ from pathlib import Path
 ROOT_DIR = Path(__file__).resolve().parents[2]
 
 # ── Data directories ─────────────────────────────────────────────────────────
-RAW_DIR       = ROOT_DIR / "data" / "raw"
+RAW_DIR = ROOT_DIR / "data" / "raw"
 PROCESSED_DIR = ROOT_DIR / "data" / "processed"
-MARTS_DIR     = ROOT_DIR / "data" / "marts"
+MARTS_DIR = ROOT_DIR / "data" / "marts"
 
 # ── Source files ─────────────────────────────────────────────────────────────
 RAW_CSV = RAW_DIR / "saas-market-2026.csv"
 
 # ── Output files ─────────────────────────────────────────────────────────────
-CLEAN_PARQUET    = PROCESSED_DIR / "saas_clean.parquet"
-MART_CATEGORY    = MARTS_DIR / "mart_category.parquet"
-MART_PRICING     = MARTS_DIR / "mart_pricing.parquet"
-MART_FEATURES    = MARTS_DIR / "mart_features.parquet"
+CLEAN_PARQUET = PROCESSED_DIR / "saas_clean.parquet"
+MART_CATEGORY = MARTS_DIR / "mart_category.parquet"
+MART_PRICING = MARTS_DIR / "mart_pricing.parquet"
+MART_FEATURES = MARTS_DIR / "mart_features.parquet"
 
 # ── Schema ───────────────────────────────────────────────────────────────────
 EXPECTED_COLUMNS = [
@@ -49,4 +49,4 @@ CATEGORICAL_COLUMNS = ["category", "vertical"]
 # ── Business rules ───────────────────────────────────────────────────────────
 RATING_MIN = 0.0
 RATING_MAX = 5.0
-PRICE_MAX  = 10_000.0   # sanity cap for outlier detection
+PRICE_MAX = 10_000.0  # sanity cap for outlier detection
