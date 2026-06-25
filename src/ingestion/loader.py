@@ -5,6 +5,7 @@ Entry point: `load_and_validate(path) -> pd.DataFrame`
 """
 
 from pathlib import Path
+from typing import Any
 
 import great_expectations as gx
 import pandas as pd
@@ -64,7 +65,7 @@ def run_ge_suite(df: pd.DataFrame) -> dict:
     suite = gx.ExpectationSuite(name="saas_suite")
 
     # ── Expectations ──────────────────────────────────────────────────────
-    expectations = []
+    expectations: list[Any] = []
 
     for col in EXPECTED_COLUMNS:
         expectations.append(gx.expectations.ExpectColumnToExist(column=col))
@@ -99,8 +100,8 @@ def run_ge_suite(df: pd.DataFrame) -> dict:
     failed = sum(1 for r in results.results if not r.success)
     failed_expectations = [
         {
-            "expectation": r.expectation_config.type,
-            "column": r.expectation_config.kwargs.get("column"),
+            "expectation": r.expectation_config.type,  # type: ignore[union-attr]
+            "column": r.expectation_config.kwargs.get("column"),  # type: ignore[union-attr]
             "result": r.result,
         }
         for r in results.results
