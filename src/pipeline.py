@@ -2,15 +2,11 @@
 Pipeline orchestrator — runs all stages end to end.
 
 Usage:
-    python src/pipeline.py
+    pip install -e .
+    python -m src.pipeline
 """
 
-import sys
 import time
-from pathlib import Path
-
-# Allow running from project root: python src/pipeline.py
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.analysis.marts import build_marts
 from src.ingestion.loader import load_and_validate
