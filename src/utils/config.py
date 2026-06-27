@@ -36,14 +36,6 @@ EXPECTED_COLUMNS = [
     "website",
 ]
 
-NUMERIC_COLUMNS = [
-    "starting_price_usd",
-    "highest_plan_price_usd",
-    "plan_count",
-    "rating",
-    "features_count",
-]
-
 CATEGORICAL_COLUMNS = ["category", "vertical"]
 
 # ── Business rules ───────────────────────────────────────────────────────────

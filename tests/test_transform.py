@@ -4,6 +4,7 @@ Tests for the transform / cleaning layer.
 
 import numpy as np
 import pandas as pd
+import pytest
 
 from src.transform.cleaner import (
     cast_types,
@@ -49,7 +50,7 @@ class TestHandleNulls:
         # Median of [4.7, 4.4] = 4.55
         result = handle_nulls(df)
         assert result["rating"].isna().sum() == 0
-        assert 4.0 <= result.loc[1, "rating"] <= 5.0
+        assert result.loc[1, "rating"] == pytest.approx(4.55)
 
 
 class TestCastTypes:

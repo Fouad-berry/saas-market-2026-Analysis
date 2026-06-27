@@ -25,67 +25,59 @@ from src.utils.logger import logger
 
 
 def print_summary(df_clean, marts: dict) -> None:
-    """Print a human-readable summary to stdout."""
+    """Log a human-readable summary."""
     mc = marts["mart_category"]
     mp = marts["mart_pricing"]
 
-    print("\n" + "═" * 60)
-    print("  SAAS MARKET 2026 — PIPELINE SUMMARY")
-    print("═" * 60)
-    print(f"  Total tools analysed : {len(df_clean):,}")
-    print(f"  Categories           : {df_clean['category'].nunique()}")
-    print(f"  Verticals            : {', '.join(df_clean['vertical'].unique())}")
-    print(f"  Free plan available  : {df_clean['free_plan'].mean() * 100:.1f}% of tools")
-    print(f"  Average rating       : {df_clean['rating'].mean():.3f} / 5.0")
-    print(f"  Avg features/tool    : {df_clean['features_count'].mean():.1f}")
-    print()
+    logger.info("══ PIPELINE SUMMARY ══")
+    logger.info(f"Total tools analysed : {len(df_clean):,}")
+    logger.info(f"Categories           : {df_clean['category'].nunique()}")
+    logger.info(f"Verticals            : {', '.join(df_clean['vertical'].unique())}")
+    logger.info(f"Free plan available  : {df_clean['free_plan'].mean() * 100:.1f}% of tools")
+    logger.info(f"Average rating       : {df_clean['rating'].mean():.3f} / 5.0")
+    logger.info(f"Avg features/tool    : {df_clean['features_count'].mean():.1f}")
 
-    print("  TOP 5 CATEGORIES BY TOOL COUNT")
-    print("  " + "-" * 40)
+    logger.info("TOP 5 CATEGORIES BY TOOL COUNT")
     for _, row in mc.head(5).iterrows():
-        print(f"  {row['category']:<25} {row['tool_count']:>3} tools  avg ⭐ {row['avg_rating']}")
-    print()
+        tier_name = row["category"]
+        logger.info(f"  {tier_name:<25} {row['tool_count']:>3} tools  avg {row['avg_rating']}")
 
-    print("  PRICING TIER BREAKDOWN")
-    print("  " + "-" * 40)
+    logger.info("PRICING TIER BREAKDOWN")
     tier_totals = mp.groupby("pricing_tier")["tool_count"].sum().sort_values(ascending=False)
     total = tier_totals.sum()
     for tier, count in tier_totals.items():
-        bar = "█" * int(count / total * 30)
-        print(f"  {tier:<12} {bar:<30} {count:>3} ({count / total * 100:.0f}%)")
-    print("═" * 60 + "\n")
+        logger.info(f"  {tier:<12} {count:>3} ({count / total * 100:.0f}%)")
 
 
 def run_pipeline() -> None:
     start = time.perf_counter()
     logger.info("══ PIPELINE START ══")
 
-    # Ensure output dirs exist
-    PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
-    MARTS_DIR.mkdir(parents=True, exist_ok=True)
+    try:
+        PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
+        MARTS_DIR.mkdir(parents=True, exist_ok=True)
 
-    # ── Stage 1: Ingest ──────────────────────────────────────────────────
-    logger.info("[1/4] Ingestion & validation")
-    df_raw = load_and_validate(RAW_CSV)
+        logger.info("[1/4] Ingestion & validation")
+        df_raw = load_and_validate(RAW_CSV)
 
-    # ── Stage 2: Transform ───────────────────────────────────────────────
-    logger.info("[2/4] Transformation")
-    df_clean = transform(df_raw)
+        logger.info("[2/4] Transformation")
+        df_clean = transform(df_raw)
 
-    # ── Stage 3: Load (write clean Parquet) ──────────────────────────────
-    logger.info("[3/4] Loading clean data")
-    write_parquet(df_clean, CLEAN_PARQUET)
+        logger.info("[3/4] Loading clean data")
+        write_parquet(df_clean, CLEAN_PARQUET)
 
-    # ── Stage 4: Build & write marts ─────────────────────────────────────
-    logger.info("[4/4] Building marts")
-    marts = build_marts(df_clean)
-    write_parquet(marts["mart_category"], MART_CATEGORY)
-    write_parquet(marts["mart_pricing"], MART_PRICING)
-    write_parquet(marts["mart_features"], MART_FEATURES)
+        logger.info("[4/4] Building marts")
+        marts = build_marts(df_clean)
+        write_parquet(marts["mart_category"], MART_CATEGORY)
+        write_parquet(marts["mart_pricing"], MART_PRICING)
+        write_parquet(marts["mart_features"], MART_FEATURES)
 
-    elapsed = time.perf_counter() - start
-    logger.info(f"══ PIPELINE COMPLETE in {elapsed:.2f}s ══")
-    print_summary(df_clean, marts)
+        elapsed = time.perf_counter() - start
+        logger.info(f"══ PIPELINE COMPLETE in {elapsed:.2f}s ══")
+        print_summary(df_clean, marts)
+    except Exception:
+        logger.exception("Pipeline failed")
+        raise
 
 
 if __name__ == "__main__":

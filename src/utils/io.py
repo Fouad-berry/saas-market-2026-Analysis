@@ -16,7 +16,10 @@ def write_parquet(df: pd.DataFrame, path: Path) -> None:
     df_out = df.copy()
     for col in df_out.select_dtypes(include="category").columns:
         df_out[col] = df_out[col].astype(str)
-    df_out.to_parquet(path, index=False, engine="pyarrow", compression="snappy")
+    # Atomic write: write to temp file, then rename
+    tmp = path.with_suffix(".tmp.parquet")
+    df_out.to_parquet(tmp, index=False, engine="pyarrow", compression="snappy")
+    tmp.rename(path)
     size_kb = path.stat().st_size / 1024
     logger.info(f"Written {len(df_out):,} rows → {path.name} ({size_kb:.1f} KB)")
 

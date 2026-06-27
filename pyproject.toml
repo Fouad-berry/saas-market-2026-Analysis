@@ -38,7 +38,7 @@ quote-style = "double"
 indent-style = "space"
 
 [tool.mypy]
-python_version = "3.12"
+python_version = "3.11"
 warn_unused_ignores = true
 ignore_missing_imports = true
 check_untyped_defs = true

@@ -9,6 +9,7 @@ Marts:
 Entry point: `build_marts(df) -> dict[str, pd.DataFrame]`
 """
 
+import numpy as np
 import pandas as pd
 
 from src.utils.logger import logger
@@ -63,18 +64,11 @@ def build_mart_pricing(df: pd.DataFrame) -> pd.DataFrame:
     Tiers: Free (0), Budget (0<p<=20), Mid (20<p<=100), Premium (>100)
     """
 
-    def assign_tier(price: float) -> str:
-        if price == 0:
-            return "Free"
-        elif price <= 20:
-            return "Budget"
-        elif price <= 100:
-            return "Mid-Market"
-        else:
-            return "Premium"
-
     df = df.copy()
-    df["pricing_tier"] = df["starting_price_usd"].apply(assign_tier)
+    bins = [-np.inf, 0, 20, 100, np.inf]
+    labels = ["Free", "Budget", "Mid-Market", "Premium"]
+    df["pricing_tier"] = pd.cut(df["starting_price_usd"], bins=bins, labels=labels, right=True)
+    df["pricing_tier"] = df["pricing_tier"].fillna("Free")
 
     agg = (
         df.groupby(["vertical", "pricing_tier"], observed=True)

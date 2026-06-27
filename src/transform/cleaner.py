@@ -31,16 +31,17 @@ def handle_nulls(df: pd.DataFrame) -> pd.DataFrame:
     # highest plan price: impute with category median
     null_high = df["highest_plan_price_usd"].isna().sum()
     cat_median = df.groupby("category")["highest_plan_price_usd"].transform("median")
-    df["highest_plan_price_usd"] = df["highest_plan_price_usd"].fillna(cat_median)
-    # fallback: global median for categories with all nulls
+    # fallback: global median computed BEFORE category fill to avoid leak
     global_median = df["highest_plan_price_usd"].median()
+    df["highest_plan_price_usd"] = df["highest_plan_price_usd"].fillna(cat_median)
     df["highest_plan_price_usd"] = df["highest_plan_price_usd"].fillna(global_median)
     if null_high:
         logger.debug(f"Imputed {null_high} null(s) in highest_plan_price_usd (category median)")
 
     # rating: global median
     null_rating = df["rating"].isna().sum()
-    df["rating"] = df["rating"].fillna(df["rating"].median())
+    global_median_rating = df["rating"].median()
+    df["rating"] = df["rating"].fillna(global_median_rating)
     if null_rating:
         logger.debug(f"Imputed {null_rating} null(s) in rating (global median)")
 
@@ -58,9 +59,9 @@ def cast_types(df: pd.DataFrame) -> pd.DataFrame:
     for col in CATEGORICAL_COLUMNS:
         df[col] = df[col].astype("category")
 
-    df["free_plan"] = df["free_plan"].astype(bool)
-    df["plan_count"] = df["plan_count"].astype(int)
-    df["features_count"] = df["features_count"].astype(int)
+    df["free_plan"] = df["free_plan"].fillna(False).astype(bool)
+    df["plan_count"] = df["plan_count"].fillna(0).astype(int)
+    df["features_count"] = df["features_count"].fillna(0).astype(int)
     df["starting_price_usd"] = df["starting_price_usd"].astype(float)
     df["highest_plan_price_usd"] = df["highest_plan_price_usd"].astype(float)
     df["rating"] = df["rating"].astype(float)
@@ -97,19 +98,19 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
     df["is_freemium"] = df["free_plan"] & (df["starting_price_usd"] > 0)
 
     # rating tier (Low < p33, High >= p67)
-    r33, r67 = df["rating"].quantile([0.33, 0.67])
-    df["rating_tier"] = pd.cut(
+    df["rating_tier"] = pd.qcut(
         df["rating"],
-        bins=[-np.inf, r33, r67, np.inf],
+        q=[0, 0.33, 0.67, 1.0],
         labels=["Low", "Mid", "High"],
+        duplicates="drop",
     )
 
     # features tier
-    f33, f67 = df["features_count"].quantile([0.33, 0.67])
-    df["features_tier"] = pd.cut(
+    df["features_tier"] = pd.qcut(
         df["features_count"],
-        bins=[-np.inf, f33, f67, np.inf],
+        q=[0, 0.33, 0.67, 1.0],
         labels=["Low", "Mid", "High"],
+        duplicates="drop",
     )
 
     df["log_highest_price"] = np.log1p(df["highest_plan_price_usd"])

@@ -7,6 +7,8 @@ import sys
 
 from loguru import logger
 
+from src.utils.config import ROOT_DIR
+
 logger.remove()  # remove default stderr sink
 logger.add(
     sys.stdout,
@@ -18,7 +20,7 @@ logger.add(
     colorize=True,
 )
 logger.add(
-    "logs/pipeline.log",
+    ROOT_DIR / "logs" / "pipeline.log",
     rotation="10 MB",
     retention="7 days",
     level="DEBUG",
