@@ -106,6 +106,14 @@ def build_mart_features(df: pd.DataFrame) -> pd.DataFrame:
     Feature richness vs. rating correlation, by category.
     Useful to detect whether more features correlates with higher ratings.
     """
+
+    def _corr_features_rating(group: pd.Series) -> float:
+        if len(group) <= 2:
+            return float("nan")
+        with np.errstate(invalid="ignore", divide="ignore"):
+            corr = group.corr(df.loc[group.index, "rating"])
+        return round(corr, 3)
+
     agg = (
         df.groupby("category", observed=True)
         .agg(
@@ -115,12 +123,7 @@ def build_mart_features(df: pd.DataFrame) -> pd.DataFrame:
             max_features=("features_count", "max"),
             avg_rating=("rating", lambda x: round(x.mean(), 3)),
             std_rating=("rating", lambda x: round(x.std(), 3)),
-            corr_features_rating=(
-                "features_count",
-                lambda x: (
-                    round(x.corr(df.loc[x.index, "rating"]), 3) if len(x) > 2 else float("nan")
-                ),
-            ),
+            corr_features_rating=("features_count", _corr_features_rating),
         )
         .reset_index()
     )

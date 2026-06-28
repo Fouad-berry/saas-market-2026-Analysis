@@ -5,9 +5,9 @@ Tests for the ingestion layer.
 import pandas as pd
 import pytest
 
-from src.ingestion.loader import validate_schema
+from src.ingestion.loader import load_raw, validate_schema
 
-VALID_COLS = [
+EXPECTED_COLS = [
     "tool_name",
     "category",
     "vertical",
@@ -41,7 +41,7 @@ def make_df(**overrides):
 
 class TestValidateSchema:
     def test_valid_df_passes(self):
-        validate_schema(make_df())  # should not raise
+        validate_schema(make_df())
 
     def test_missing_column_raises(self):
         df = make_df().drop(columns=["rating"])
@@ -51,4 +51,28 @@ class TestValidateSchema:
     def test_extra_columns_allowed(self):
         df = make_df()
         df["extra_col"] = "foo"
-        validate_schema(df)  # extra columns are fine
+        validate_schema(df)
+
+
+class TestLoadRaw:
+    def test_loads_csv_with_expected_columns(self, tmp_path):
+        csv = tmp_path / "test.csv"
+        csv.write_text(
+            "tool_name,category,vertical,free_plan,starting_price_usd,"
+            "highest_plan_price_usd,plan_count,rating,features_count,website\n"
+            "ToolA,pm,Business,true,0.0,10.0,3,4.5,10,https://toola.com\n"
+            "ToolB,pm,Business,false,5.0,20.0,2,4.0,8,https://toolb.com\n"
+        )
+        df = load_raw(csv)
+        assert list(df.columns) == EXPECTED_COLS
+        assert len(df) == 2
+
+    def test_loads_empty_csv_returns_empty_df(self, tmp_path):
+        csv = tmp_path / "empty.csv"
+        csv.write_text(
+            "tool_name,category,vertical,free_plan,starting_price_usd,"
+            "highest_plan_price_usd,plan_count,rating,features_count,website\n"
+        )
+        df = load_raw(csv)
+        assert len(df) == 0
+        assert list(df.columns) == EXPECTED_COLS

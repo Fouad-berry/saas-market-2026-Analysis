@@ -100,8 +100,8 @@ def run_ge_suite(df: pd.DataFrame) -> dict:
     failed = sum(1 for r in results.results if not r.success)
     failed_expectations = [
         {
-            "expectation": r.expectation_config.type,  # type: ignore[union-attr]
-            "column": r.expectation_config.kwargs.get("column"),  # type: ignore[union-attr]
+            "expectation": r.expectation_config.type,
+            "column": r.expectation_config.kwargs.get("column"),
             "result": r.result,
         }
         for r in results.results
