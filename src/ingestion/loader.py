@@ -10,7 +10,16 @@ from typing import Any
 import great_expectations as gx
 import pandas as pd
 
-from src.utils.config import EXPECTED_COLUMNS, PRICE_MAX, RATING_MAX, RATING_MIN
+from src.utils.config import (
+    EXPECTED_COLUMNS,
+    EXPECTED_VERTICALS,
+    MIN_PLAN_COUNT,
+    PRICE_MAX,
+    PRICE_MOSTLY,
+    RATING_MAX,
+    RATING_MIN,
+    RATING_MOSTLY,
+)
 from src.utils.logger import logger
 
 # ── Loader ────────────────────────────────────────────────────────────────────
@@ -19,16 +28,23 @@ from src.utils.logger import logger
 def load_raw(path: Path) -> pd.DataFrame:
     """Read the raw CSV into a DataFrame with basic type hints."""
     logger.info(f"Loading raw data from {path}")
-    df = pd.read_csv(
-        path,
-        dtype={
-            "tool_name": str,
-            "category": str,
-            "vertical": str,
-            "free_plan": bool,
-            "website": str,
-        },
-    )
+    try:
+        df = pd.read_csv(
+            path,
+            dtype={
+                "tool_name": str,
+                "category": str,
+                "vertical": str,
+                "free_plan": bool,
+                "website": str,
+            },
+        )
+    except FileNotFoundError:
+        logger.error(f"CSV file not found: {path}")
+        raise
+    except pd.errors.ParserError as e:
+        logger.error(f"Failed to parse CSV {path}: {e}")
+        raise
     logger.info(f"Loaded {len(df):,} rows x {len(df.columns)} columns")
     return df
 
@@ -40,7 +56,9 @@ def validate_schema(df: pd.DataFrame) -> None:
     """Raise ValueError if expected columns are missing."""
     missing = set(EXPECTED_COLUMNS) - set(df.columns)
     if missing:
-        raise ValueError(f"Missing columns in source data: {missing}")
+        raise ValueError(
+            f"Missing columns: {missing}. Expected: {EXPECTED_COLUMNS}"
+        )
     logger.info("Schema validation passed ✓")
 
 
@@ -73,20 +91,23 @@ def run_ge_suite(df: pd.DataFrame) -> dict:
     expectations += [
         gx.expectations.ExpectColumnValuesToBeUnique(column="tool_name"),
         gx.expectations.ExpectColumnValuesToBeBetween(
-            column="rating", min_value=RATING_MIN, max_value=RATING_MAX, mostly=0.95
+            column="rating", min_value=RATING_MIN, max_value=RATING_MAX, mostly=RATING_MOSTLY
         ),
         gx.expectations.ExpectColumnValuesToBeBetween(
-            column="starting_price_usd", min_value=0.0, mostly=0.99
+            column="starting_price_usd", min_value=0.0, mostly=PRICE_MOSTLY
         ),
         gx.expectations.ExpectColumnValuesToBeBetween(
-            column="highest_plan_price_usd", min_value=0.0, max_value=PRICE_MAX, mostly=0.95
+            column="highest_plan_price_usd",
+            min_value=0.0,
+            max_value=PRICE_MAX,
+            mostly=RATING_MOSTLY,
         ),
         gx.expectations.ExpectColumnValuesToBeInSet(
-            column="vertical", value_set=["Business", "AI", "Crypto"]
+            column="vertical", value_set=EXPECTED_VERTICALS
         ),
         gx.expectations.ExpectColumnValuesToBeInSet(column="free_plan", value_set=[True, False]),
         gx.expectations.ExpectColumnValuesToBeBetween(
-            column="plan_count", min_value=1, mostly=0.99
+            column="plan_count", min_value=MIN_PLAN_COUNT, mostly=PRICE_MOSTLY
         ),
     ]
 

@@ -7,7 +7,7 @@ Entry point: `transform(df) -> pd.DataFrame`
 import numpy as np
 import pandas as pd
 
-from src.utils.config import CATEGORICAL_COLUMNS
+from src.utils.config import CATEGORICAL_COLUMNS, TIER_LABELS, TIER_QUANTILES
 from src.utils.logger import logger
 
 # ── 1. Null handling ──────────────────────────────────────────────────────────
@@ -100,16 +100,16 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
     # rating tier (Low < p33, High >= p67)
     df["rating_tier"] = pd.qcut(
         df["rating"],
-        q=[0, 0.33, 0.67, 1.0],
-        labels=["Low", "Mid", "High"],
+        q=TIER_QUANTILES,
+        labels=TIER_LABELS,
         duplicates="drop",
     )
 
     # features tier
     df["features_tier"] = pd.qcut(
         df["features_count"],
-        q=[0, 0.33, 0.67, 1.0],
-        labels=["Low", "Mid", "High"],
+        q=TIER_QUANTILES,
+        labels=TIER_LABELS,
         duplicates="drop",
     )
 

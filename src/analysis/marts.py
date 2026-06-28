@@ -12,6 +12,7 @@ Entry point: `build_marts(df) -> dict[str, pd.DataFrame]`
 import numpy as np
 import pandas as pd
 
+from src.utils.config import PRICING_BINS, PRICING_LABELS, PRICING_TIER_ORDER
 from src.utils.logger import logger
 
 # ── Mart 1: Category summary ──────────────────────────────────────────────────
@@ -65,9 +66,9 @@ def build_mart_pricing(df: pd.DataFrame) -> pd.DataFrame:
     """
 
     df = df.copy()
-    bins = [-np.inf, 0, 20, 100, np.inf]
-    labels = ["Free", "Budget", "Mid-Market", "Premium"]
-    df["pricing_tier"] = pd.cut(df["starting_price_usd"], bins=bins, labels=labels, right=True)
+    df["pricing_tier"] = pd.cut(
+        df["starting_price_usd"], bins=PRICING_BINS, labels=PRICING_LABELS, right=True
+    )
     df["pricing_tier"] = df["pricing_tier"].fillna("Free")
 
     agg = (
@@ -86,8 +87,7 @@ def build_mart_pricing(df: pd.DataFrame) -> pd.DataFrame:
     agg["share_pct"] = (agg["tool_count"] / total_per_vertical * 100).round(1)
 
     # Ordered tiers for readability
-    tier_order = {"Free": 0, "Budget": 1, "Mid-Market": 2, "Premium": 3}
-    agg["tier_order"] = agg["pricing_tier"].map(tier_order)
+    agg["tier_order"] = agg["pricing_tier"].map(PRICING_TIER_ORDER)
     agg = (
         agg.sort_values(["vertical", "tier_order"])
         .drop(columns="tier_order")

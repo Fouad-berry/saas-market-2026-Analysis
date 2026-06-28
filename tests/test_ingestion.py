@@ -6,19 +6,7 @@ import pandas as pd
 import pytest
 
 from src.ingestion.loader import load_raw, validate_schema
-
-EXPECTED_COLS = [
-    "tool_name",
-    "category",
-    "vertical",
-    "free_plan",
-    "starting_price_usd",
-    "highest_plan_price_usd",
-    "plan_count",
-    "rating",
-    "features_count",
-    "website",
-]
+from src.utils.config import EXPECTED_COLUMNS as EXPECTED_COLS
 
 
 def make_df(**overrides):
