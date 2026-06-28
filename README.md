@@ -1,6 +1,6 @@
 # SaaS Market 2026 — Data Engineering Pipeline
 
-A production-grade data engineering pipeline for analyzing the SaaS market landscape (2026), covering **330 tools** across **28 categories** and **3 verticals** (Business, AI, Crypto).
+A production-grade data engineering pipeline for analyzing the SaaS market landscape (2026), covering **329 tools** across **28 categories** and **3 verticals** (Business, AI, Crypto).
 
 ---
 
@@ -89,7 +89,7 @@ jupyter lab notebooks/exploration.ipynb
 
 ## 📊 Key Insights (sample)
 
-- **330 tools** analyzed across 28 categories
+- **329 tools** analyzed across 28 categories
 - **~61%** of tools offer a free plan
 - Average rating: **4.42 / 5**
 - Highest price range: **$0.04 → $3,600/month**
@@ -111,12 +111,12 @@ Covers:
 
 ---
 
-## ⚙️ CI/CD (planned)
+## ⚙️ CI/CD
 
-GitHub Actions workflow (to be created) will run on every push to `main`:
+GitHub Actions workflow runs on every push to `main`:
 1. Install dependencies
 2. Run full pipeline
-3. Run all tests
+3. Run all tests (pytest, ruff, mypy)
 4. Upload processed artifacts
 
 ---
@@ -125,8 +125,8 @@ GitHub Actions workflow (to be created) will run on every push to `main`:
 
 | File | Rows | Format |
 |---|---|---|
-| `data/raw/saas-market-2026.csv` | 330 | CSV |
-| `data/processed/saas_clean.parquet` | 330 | Parquet |
+| `data/raw/saas-market-2026.csv` | 331 | CSV |
+| `data/processed/saas_clean.parquet` | 329 | Parquet |
 | `data/marts/*.parquet` | varies | Parquet |
 
 ---
@@ -141,7 +141,7 @@ GitHub Actions workflow (to be created) will run on every push to `main`:
 | Data quality | Great Expectations |
 | Visualization | Plotly, Matplotlib, Seaborn |
 | Logging | Loguru |
-| Configuration | Pydantic, python-dotenv |
+| Configuration | Pathlib (built-in) |
 | Testing | Pytest (with pytest-cov) |
 | CI/CD | GitHub Actions (planned) |
 | Notebooks | Jupyter Lab |

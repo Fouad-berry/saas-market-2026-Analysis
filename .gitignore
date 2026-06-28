@@ -1,17 +1,4 @@
 # ============================================
-# dbt artifacts
-# ============================================
-target/
-dbt_packages/
-logs/
-.user.yml
-
-# Warehouse local DuckDB (peut être lourd)
-warehouse/
-*.duckdb
-*.duckdb.wal
-
-# ============================================
 # Python
 # ============================================
 __pycache__/
@@ -23,7 +10,7 @@ dist/
 *.egg-info/
 
 # ============================================
-# Environnements virtuels
+# Virtual environments
 # ============================================
 venv/
 env/
@@ -49,19 +36,9 @@ env/
 Thumbs.db
 
 # ============================================
-# Secrets (profiles avec credentials)
-# ============================================
-# Sur ce projet on commit profiles.yml car DuckDB est local et sans secret.
-# Pour BigQuery/Snowflake, NE PAS commit profiles.yml :
-# profiles.yml
-service_account.json
-*.json.key
-credentials.json
-.dbt/
-
-# ============================================
 # Logs & cache
 # ============================================
+logs/
 *.log
 .pytest_cache/
 .mypy_cache/
