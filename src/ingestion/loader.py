@@ -100,7 +100,7 @@ def run_ge_suite(df: pd.DataFrame) -> dict:
             column="highest_plan_price_usd",
             min_value=0.0,
             max_value=PRICE_MAX,
-            mostly=RATING_MOSTLY,
+            mostly=PRICE_MOSTLY,
         ),
         gx.expectations.ExpectColumnValuesToBeInSet(
             column="vertical", value_set=EXPECTED_VERTICALS

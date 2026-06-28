@@ -115,7 +115,15 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
 
     df["log_highest_price"] = np.log1p(df["highest_plan_price_usd"])
 
-    logger.info("Engineered 6 new features ✓")
+    new_features = [
+        "price_range_usd",
+        "price_per_feature_usd",
+        "is_freemium",
+        "rating_tier",
+        "features_tier",
+        "log_highest_price",
+    ]
+    logger.info(f"Engineered {len(new_features)} new features ✓")
     return df
 
 
@@ -123,7 +131,7 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def deduplicate(df: pd.DataFrame) -> pd.DataFrame:
-    """Drop exact duplicate rows, keep first occurrence."""
+    """Drop rows with duplicate tool_name, keep first occurrence."""
     before = len(df)
     df = df.drop_duplicates(subset=["tool_name"])
     dropped = before - len(df)

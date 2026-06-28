@@ -10,7 +10,7 @@ from src.utils.logger import logger
 
 
 def write_parquet(df: pd.DataFrame, path: Path) -> None:
-    """Write a DataFrame to Parquet, creating parent dirs as needed."""
+    """Write a DataFrame to Parquet via atomic write (tmp + rename)."""
     path.parent.mkdir(parents=True, exist_ok=True)
     df_out = df.copy()
     for col in df_out.select_dtypes(include="category").columns:

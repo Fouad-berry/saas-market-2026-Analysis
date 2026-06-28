@@ -24,7 +24,7 @@ from src.utils.io import write_parquet
 from src.utils.logger import logger
 
 
-def print_summary(df_clean, marts: dict) -> None:
+def log_summary(df_clean, marts: dict) -> None:
     """Log a human-readable summary."""
     mc = marts["mart_category"]
     mp = marts["mart_pricing"]
@@ -50,6 +50,7 @@ def print_summary(df_clean, marts: dict) -> None:
 
 
 def run_pipeline() -> None:
+    """Run the full ETL pipeline: ingest → transform → load → mart."""
     start = time.perf_counter()
     logger.info("══ PIPELINE START ══")
 
@@ -74,7 +75,7 @@ def run_pipeline() -> None:
 
         elapsed = time.perf_counter() - start
         logger.info(f"══ PIPELINE COMPLETE in {elapsed:.2f}s ══")
-        print_summary(df_clean, marts)
+        log_summary(df_clean, marts)
     except Exception:
         logger.exception("Pipeline failed")
         raise
