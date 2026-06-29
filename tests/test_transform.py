@@ -34,6 +34,31 @@ class TestHandleNulls:
         assert result["rating"].isna().sum() == 0
         assert result.loc[1, "rating"] == pytest.approx(4.55)
 
+    def test_handle_nulls_empty_df(self):
+        cols = ["category", "starting_price_usd", "highest_plan_price_usd", "rating"]
+        empty = pd.DataFrame(columns=cols)
+        result = handle_nulls(empty)
+        assert len(result) == 0
+
+    def test_handle_nulls_all_null_category_falls_back_to_zero(self):
+        df = pd.DataFrame(
+            {
+                "tool_name": ["A", "B"],
+                "category": ["x", "x"],
+                "vertical": ["Business", "Business"],
+                "free_plan": [True, True],
+                "starting_price_usd": [0.0, 0.0],
+                "highest_plan_price_usd": [None, None],
+                "plan_count": [1, 1],
+                "rating": [3.0, 4.0],
+                "features_count": [5, 5],
+                "website": ["a.com", "b.com"],
+            }
+        )
+        result = handle_nulls(df)
+        assert result["highest_plan_price_usd"].isna().sum() == 0
+        assert result["highest_plan_price_usd"].iloc[0] == 0.0
+
 
 class TestCastTypes:
     def test_numeric_columns_are_float(self, base_df):
@@ -113,9 +138,53 @@ class TestEngineerFeatures:
             assert col in result.columns
             assert str(result[col].dtype) == "category"
 
+    def test_all_identical_ratings_does_not_raise(self):
+        df = pd.DataFrame({
+            "tool_name": ["A", "B", "C"],
+            "category": ["x", "x", "x"],
+            "vertical": ["Business", "Business", "Business"],
+            "free_plan": [True, False, True],
+            "starting_price_usd": [0.0, 5.0, 10.0],
+            "highest_plan_price_usd": [10.0, 20.0, 30.0],
+            "plan_count": [2, 3, 1],
+            "rating": [4.5, 4.5, 4.5],
+            "features_count": [10, 10, 10],
+            "website": ["a.com", "b.com", "c.com"],
+        })
+        df = handle_nulls(df)
+        df = cast_types(df)
+        result = engineer_features(df)
+        assert result["rating_tier"].notna().all()
+        assert result["features_tier"].notna().all()
+        assert (result["rating_tier"].astype(str) == "Mid").all()
+        assert (result["features_tier"].astype(str) == "Mid").all()
+
+
+class TestCastTypesWithNulls:
+    def test_cast_types_handles_null_plan_count(self, base_df):
+        df = handle_nulls(base_df)
+        df["plan_count"] = df["plan_count"].where(df["plan_count"] != 3, None)
+        result = cast_types(df)
+        assert result["plan_count"].dtype == int
+        assert result["plan_count"].isna().sum() == 0
+
+    def test_cast_types_handles_null_features_count(self, base_df):
+        df = handle_nulls(base_df)
+        df["features_count"] = df["features_count"].where(df["features_count"] != 20, None)
+        result = cast_types(df)
+        assert result["features_count"].dtype == int
+        assert result["features_count"].isna().sum() == 0
+
+    def test_cast_types_handles_null_free_plan(self, base_df):
+        df = handle_nulls(base_df)
+        df["free_plan"] = df["free_plan"].where(~df["free_plan"], None)
+        result = cast_types(df)
+        assert result["free_plan"].dtype == bool
+        assert result["free_plan"].isna().sum() == 0
+
 
 class TestDeduplicate:
-    def test_removes_exact_duplicates(self, base_df):
+    def test_removes_duplicate_tool_names(self, base_df):
         df = pd.concat([base_df, base_df.iloc[[0]]], ignore_index=True)
         result = deduplicate(df)
         assert len(result) == len(base_df)
@@ -124,6 +193,23 @@ class TestDeduplicate:
         df = base_df
         result = deduplicate(df)
         assert len(result) == len(df)
+
+    def test_keeps_first_occurrence(self):
+        df = pd.DataFrame({
+            "tool_name": ["A", "A", "B"],
+            "category": ["x", "y", "z"],
+            "vertical": ["Business", "AI", "Business"],
+            "free_plan": [True, False, True],
+            "starting_price_usd": [0.0, 10.0, 0.0],
+            "highest_plan_price_usd": [10.0, 20.0, 15.0],
+            "plan_count": [2, 3, 1],
+            "rating": [4.0, 3.0, 5.0],
+            "features_count": [10, 15, 8],
+            "website": ["a.com", "a2.com", "b.com"],
+        })
+        result = deduplicate(df)
+        assert len(result) == 2
+        assert result.loc[0, "category"] == "x"
 
 
 class TestTransformIntegration:

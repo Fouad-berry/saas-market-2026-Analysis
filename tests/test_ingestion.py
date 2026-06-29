@@ -64,3 +64,7 @@ class TestLoadRaw:
         df = load_raw(csv)
         assert len(df) == 0
         assert list(df.columns) == EXPECTED_COLS
+
+    def test_load_raw_missing_file_raises(self, tmp_path):
+        with pytest.raises(FileNotFoundError):
+            load_raw(tmp_path / "nonexistent.csv")

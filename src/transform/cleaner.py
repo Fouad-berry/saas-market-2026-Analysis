@@ -35,6 +35,8 @@ def handle_nulls(df: pd.DataFrame) -> pd.DataFrame:
     global_median = df["highest_plan_price_usd"].median()
     df["highest_plan_price_usd"] = df["highest_plan_price_usd"].fillna(cat_median)
     df["highest_plan_price_usd"] = df["highest_plan_price_usd"].fillna(global_median)
+    # last resort: if all values in a category are null, both medians are NaN → fill with 0
+    df["highest_plan_price_usd"] = df["highest_plan_price_usd"].fillna(0.0)
     if null_high:
         logger.debug(f"Imputed {null_high} null(s) in highest_plan_price_usd (category median)")
 
@@ -98,20 +100,20 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
     df["is_freemium"] = df["free_plan"] & (df["starting_price_usd"] > 0)
 
     # rating tier (Low < p33, High >= p67)
-    df["rating_tier"] = pd.qcut(
-        df["rating"],
-        q=TIER_QUANTILES,
-        labels=TIER_LABELS,
-        duplicates="drop",
-    )
+    try:
+        df["rating_tier"] = pd.qcut(
+            df["rating"], q=TIER_QUANTILES, labels=TIER_LABELS, duplicates="drop"
+        )
+    except ValueError:
+        df["rating_tier"] = pd.CategoricalIndex(["Mid"] * len(df), categories=TIER_LABELS)
 
     # features tier
-    df["features_tier"] = pd.qcut(
-        df["features_count"],
-        q=TIER_QUANTILES,
-        labels=TIER_LABELS,
-        duplicates="drop",
-    )
+    try:
+        df["features_tier"] = pd.qcut(
+            df["features_count"], q=TIER_QUANTILES, labels=TIER_LABELS, duplicates="drop"
+        )
+    except ValueError:
+        df["features_tier"] = pd.CategoricalIndex(["Mid"] * len(df), categories=TIER_LABELS)
 
     df["log_highest_price"] = np.log1p(df["highest_plan_price_usd"])
 
