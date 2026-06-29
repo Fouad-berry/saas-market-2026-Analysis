@@ -4,22 +4,18 @@ Pipeline orchestrator — runs all stages end to end.
 Usage:
     pip install -e .
     python -m src.pipeline
+    python -m src.pipeline --input data/raw/saas-market-2026.csv --skip-validation
 """
 
+import argparse
+import sys
 import time
+from pathlib import Path
 
 from src.analysis.marts import build_marts
-from src.ingestion.loader import load_and_validate
+from src.ingestion.loader import load_and_validate, load_raw
 from src.transform.cleaner import transform
-from src.utils.config import (
-    CLEAN_PARQUET,
-    MART_CATEGORY,
-    MART_FEATURES,
-    MART_PRICING,
-    MARTS_DIR,
-    PROCESSED_DIR,
-    RAW_CSV,
-)
+from src.utils.config import MARTS_DIR, PROCESSED_DIR, RAW_CSV
 from src.utils.io import write_parquet
 from src.utils.logger import logger
 
@@ -49,29 +45,48 @@ def log_summary(df_clean, marts: dict) -> None:
         logger.info(f"  {tier:<12} {count:>3} ({count / total * 100:.0f}%)")
 
 
-def run_pipeline() -> None:
-    """Run the full ETL pipeline: ingest → transform → load → mart."""
+def run_pipeline(
+    input_path: Path | None = None,
+    output_dir: Path | None = None,
+    skip_validation: bool = False,
+) -> None:
+    """Run the full ETL pipeline: ingest → transform → load → mart.
+
+    Parameters
+    ----------
+    input_path : Path, optional
+        Override input CSV path (default: RAW_CSV from config).
+    output_dir : Path, optional
+        Override output directory for marts (default: MARTS_DIR).
+    skip_validation : bool
+        Skip Great Expectations validation (fast mode).
+    """
     start = time.perf_counter()
     logger.info("══ PIPELINE START ══")
 
+    src = input_path or RAW_CSV
+    out = output_dir or MARTS_DIR
+    clean_dir = output_dir.parent if output_dir else PROCESSED_DIR
+    clean_path = clean_dir / "saas_clean.parquet"
+
     try:
-        PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
-        MARTS_DIR.mkdir(parents=True, exist_ok=True)
+        out.mkdir(parents=True, exist_ok=True)
+        clean_dir.mkdir(parents=True, exist_ok=True)
 
         logger.info("[1/4] Ingestion & validation")
-        df_raw = load_and_validate(RAW_CSV)
+        df_raw = load_and_validate(src) if not skip_validation else load_raw(src)
 
         logger.info("[2/4] Transformation")
         df_clean = transform(df_raw)
 
         logger.info("[3/4] Loading clean data")
-        write_parquet(df_clean, CLEAN_PARQUET)
+        write_parquet(df_clean, clean_path)
 
         logger.info("[4/4] Building marts")
         marts = build_marts(df_clean)
-        write_parquet(marts["mart_category"], MART_CATEGORY)
-        write_parquet(marts["mart_pricing"], MART_PRICING)
-        write_parquet(marts["mart_features"], MART_FEATURES)
+        write_parquet(marts["mart_category"], out / "mart_category.parquet")
+        write_parquet(marts["mart_pricing"], out / "mart_pricing.parquet")
+        write_parquet(marts["mart_features"], out / "mart_features.parquet")
 
         elapsed = time.perf_counter() - start
         logger.info(f"══ PIPELINE COMPLETE in {elapsed:.2f}s ══")
@@ -81,5 +96,43 @@ def run_pipeline() -> None:
         raise
 
 
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    """Parse command-line arguments."""
+    parser = argparse.ArgumentParser(
+        description="SaaS Market 2026 — Data engineering pipeline",
+    )
+    parser.add_argument(
+        "--input", "-i",
+        type=Path,
+        default=None,
+        help="Input CSV path (default: config.RAW_CSV)",
+    )
+    parser.add_argument(
+        "--output-dir", "-o",
+        type=Path,
+        default=None,
+        help="Output directory for marts (default: config.MARTS_DIR)",
+    )
+    parser.add_argument(
+        "--skip-validation", "-s",
+        action="store_true",
+        help="Skip Great Expectations validation",
+    )
+    parser.add_argument(
+        "--verbose", "-v",
+        action="store_true",
+        help="Enable DEBUG-level logging",
+    )
+    return parser.parse_args(argv)
+
+
 if __name__ == "__main__":
-    run_pipeline()
+    args = parse_args()
+    if args.verbose:
+        logger.remove()
+        logger.add(sys.stdout, level="DEBUG")
+    run_pipeline(
+        input_path=args.input,
+        output_dir=args.output_dir,
+        skip_validation=args.skip_validation,
+    )
