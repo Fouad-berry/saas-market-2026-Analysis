@@ -5,7 +5,7 @@ Tests for the ingestion layer.
 import pandas as pd
 import pytest
 
-from src.ingestion.loader import load_raw, validate_schema
+from src.ingestion.loader import load_and_validate, load_raw, validate_schema
 from src.utils.config import EXPECTED_COLUMNS as EXPECTED_COLS
 
 
@@ -68,3 +68,23 @@ class TestLoadRaw:
     def test_load_raw_missing_file_raises(self, tmp_path):
         with pytest.raises(FileNotFoundError):
             load_raw(tmp_path / "nonexistent.csv")
+
+
+class TestLoadAndValidate:
+    def test_load_and_validate_returns_dataframe(self, tmp_path):
+        csv = tmp_path / "valid.csv"
+        csv.write_text(
+            "tool_name,category,vertical,free_plan,starting_price_usd,"
+            "highest_plan_price_usd,plan_count,rating,features_count,website\n"
+            "ToolA,pm,Business,true,0.0,10.0,3,4.5,10,https://toola.com\n"
+        )
+        df = load_and_validate(csv)
+        assert isinstance(df, pd.DataFrame)
+        assert len(df) == 1
+        assert list(df.columns) == EXPECTED_COLS
+
+    def test_load_and_validate_missing_column_raises(self, tmp_path):
+        csv = tmp_path / "bad.csv"
+        csv.write_text("tool_name,category\nToolA,pm\n")
+        with pytest.raises(ValueError, match="Missing columns"):
+            load_and_validate(csv)

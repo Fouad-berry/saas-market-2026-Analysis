@@ -17,7 +17,7 @@ from src.ingestion.loader import load_and_validate, load_raw
 from src.transform.cleaner import transform
 from src.utils.config import MARTS_DIR, PROCESSED_DIR, RAW_CSV
 from src.utils.io import write_parquet
-from src.utils.logger import logger
+from src.utils.logger import STDOUT_SINK, logger
 
 
 def log_summary(df_clean, marts: dict) -> None:
@@ -129,7 +129,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 if __name__ == "__main__":
     args = parse_args()
     if args.verbose:
-        logger.remove()
+        logger.remove(STDOUT_SINK)
         logger.add(sys.stdout, level="DEBUG")
     run_pipeline(
         input_path=args.input,

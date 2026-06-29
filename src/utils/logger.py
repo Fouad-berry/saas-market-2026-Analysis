@@ -10,7 +10,7 @@ from loguru import logger
 from src.utils.config import ROOT_DIR
 
 logger.remove()  # remove default stderr sink
-logger.add(
+STDOUT_SINK = logger.add(
     sys.stdout,
     format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | "
     "<level>{level: <8}</level> | "
@@ -27,4 +27,4 @@ logger.add(
     format="{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {name}:{function}:{line} — {message}",
 )
 
-__all__ = ["logger"]
+__all__ = ["STDOUT_SINK", "logger"]
